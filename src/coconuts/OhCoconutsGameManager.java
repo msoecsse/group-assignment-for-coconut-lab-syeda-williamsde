@@ -2,6 +2,7 @@ package coconuts;
 
 // https://stackoverflow.com/questions/42443148/how-to-correctly-separate-view-from-model-in-javafx
 
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
 import java.util.Collection;
@@ -9,15 +10,18 @@ import java.util.LinkedList;
 
 // This class manages the game, including tracking all island objects and detecting when they hit
 public class OhCoconutsGameManager {
-    private final Collection<IslandObject> allObjects = new LinkedList<>();
-    private final Collection<HittableIslandObject> hittableIslandSubjects = new LinkedList<>();
-    private final Collection<IslandObject> scheduledForRemoval = new LinkedList<>();
+    private final Collection<AbstractIslandObject> allObjects = new LinkedList<>();
+    private final Collection<AbstractIslandObjectHittable> hittableIslandSubjects = new LinkedList<>();
+    private final Collection<AbstractIslandObject> scheduledForRemoval = new LinkedList<>();
+    protected HitEvent hitEvent = new HitEvent();
+
     private final int height, width;
     private final int DROP_INTERVAL = 10;
     private final int MAX_TIME = 100;
     private Pane gamePane;
-    private Crab theCrab;
-    private Beach theBeach;
+    private IslandObjectHittableCrab theCrab;
+    private IslandObjectBeach theBeach;
+    private final ScoreBoard scoreboard;
     /* game play */
     private int coconutsInFlight = 0;
     private int gameTick = 0;
@@ -26,21 +30,29 @@ public class OhCoconutsGameManager {
         this.height = height;
         this.width = width;
         this.gamePane = gamePane;
-
-        this.theCrab = new Crab(this, height, width);
+        this.theCrab = new IslandObjectHittableCrab(this, height, width);
         registerObject(theCrab);
         gamePane.getChildren().add(theCrab.getImageView());
 
-        this.theBeach = new Beach(this, height, width);
+        Label destroyedLabel = new Label();
+        destroyedLabel.setLayoutX(10);
+        destroyedLabel.setLayoutY(10);
+        Label beachLabel = new Label();
+        beachLabel.setLayoutX(10);
+        beachLabel.setLayoutY(30);
+        scoreboard = new ScoreBoard(destroyedLabel, beachLabel);
+        hitEvent.attach(scoreboard);
+        gamePane.getChildren().addAll(destroyedLabel, beachLabel);
+        this.theBeach = new IslandObjectBeach(this, height, width);
         registerObject(theBeach);
         if (theBeach.getImageView() != null)
             System.out.println("Unexpected image view for beach");
     }
 
-    private void registerObject(IslandObject object) {
+    private void registerObject(AbstractIslandObject object) {
         allObjects.add(object);
         if (object.isHittable()) {
-            HittableIslandObject asHittable = (HittableIslandObject) object;
+            AbstractIslandObjectHittable asHittable = (AbstractIslandObjectHittable) object;
             hittableIslandSubjects.add(asHittable);
         }
     }
@@ -60,14 +72,14 @@ public class OhCoconutsGameManager {
     public void tryDropCoconut() {
         if (gameTick % DROP_INTERVAL == 0 && theCrab != null) {
             coconutsInFlight += 1;
-            Coconut c = new Coconut(this, (int) (Math.random() * width));
+            IslandObjectHittableCoconut c = new IslandObjectHittableCoconut(this, (int) (Math.random() * width));
             registerObject(c);
             gamePane.getChildren().add(c.getImageView());
         }
         gameTick++;
     }
 
-    public Crab getCrab() {
+    public IslandObjectHittableCrab getCrab() {
         return theCrab;
     }
 
@@ -76,7 +88,7 @@ public class OhCoconutsGameManager {
     }
 
     public void advanceOneTick() {
-        for (IslandObject o : allObjects) {
+        for (AbstractIslandObject o : allObjects) {
             o.step();
             o.display();
         }
@@ -84,30 +96,46 @@ public class OhCoconutsGameManager {
         // you can't change the lists while processing them, so collect
         //   items to be removed in the first pass and remove them later
         scheduledForRemoval.clear();
-        for (IslandObject thisObj : allObjects) {
-            for (HittableIslandObject hittableObject : hittableIslandSubjects) {
+        for (AbstractIslandObject thisObj : allObjects) {
+            for (AbstractIslandObjectHittable hittableObject : hittableIslandSubjects) {
                 if (thisObj.canHit(hittableObject) && thisObj.isTouching(hittableObject)) {
-                    // TODO: add code here to process the hit
+                    hitEvent.notifyAllObservers(hittableObject, thisObj);
                     scheduledForRemoval.add(hittableObject);
                     gamePane.getChildren().remove(hittableObject.getImageView());
+                    if (hittableObject == theCrab) {
+                        killCrab();
+                    } else {
+                        coconutDestroyed();
+                    }
                 }
             }
         }
         // actually remove the objects as needed
-        for (IslandObject thisObj : scheduledForRemoval) {
+        for (AbstractIslandObject thisObj : scheduledForRemoval) {
             allObjects.remove(thisObj);
-            if (thisObj instanceof HittableIslandObject) {
-                hittableIslandSubjects.remove((HittableIslandObject) thisObj);
+            if (thisObj instanceof AbstractIslandObjectHittable) {
+                hittableIslandSubjects.remove((AbstractIslandObjectHittable) thisObj);
             }
         }
         scheduledForRemoval.clear();
     }
 
-    public void scheduleForDeletion(IslandObject islandObject) {
+    public void scheduleForDeletion(AbstractIslandObject islandObject) {
         scheduledForRemoval.add(islandObject);
     }
 
     public boolean done() {
-        return coconutsInFlight == 0 && gameTick >= MAX_TIME;
+        boolean gameOver = coconutsInFlight == 0 && gameTick >= MAX_TIME;
+        if (gameOver) {
+            hitEvent.detach(scoreboard);
+        }
+        return gameOver;
+    }
+
+    public void fireLaser() {
+        if (theCrab == null) return;
+        IslandObjectLaserBeam laser = new IslandObjectLaserBeam(this, theCrab.y, theCrab.x + theCrab.width / 2);
+        registerObject(laser);
+        gamePane.getChildren().add(laser.getImageView());
     }
 }
