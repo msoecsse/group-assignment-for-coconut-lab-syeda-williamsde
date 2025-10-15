@@ -1,3 +1,9 @@
+/*
+ * Course: SWE2410-121
+ * Fall 2025-2026
+ * Name: Demarion Williams , Syeda
+ * Created 10/15/2025
+ */
 package coconuts;
 
 // https://stackoverflow.com/questions/42443148/how-to-correctly-separate-view-from-model-in-javafx

@@ -1,13 +1,25 @@
+/*
+ * Course: SWE2410-121
+ * Fall 2025-2026
+ * Name: Demarion Williams , Syeda
+ * Created 10/15/2025
+ */
 package coconuts;
 
 import javafx.scene.image.Image;
+import java.util.LinkedList;
+import java.util.List;
 
-// Represents the object that shoots down coconuts but can be hit by coconuts. Killing the
-//   crab ends the game
-// This is a domain class; other than Image, do not introduce JavaFX or other GUI components here
-public class IslandObjectHittableCrab extends AbstractIslandObjectHittable {
+/**
+ * Crab that can be hit by coconuts. Implements the Observer Pattern so that
+ * other objects (like the scoreboard or game manager) can respond when the crab is hit.
+ */
+public class IslandObjectHittableCrab extends AbstractIslandObjectHittable implements HitEventSubject {
     private static final int WIDTH = 50; // assumption: height and width are the same
     private static final Image crabImage = new Image("file:images/crab-1.png");
+
+    // List of observers for the observer pattern
+    private final List<HitEventObserver> observers = new LinkedList<>();
 
     public IslandObjectHittableCrab(OhCoconutsGameManager game, int skyHeight, int islandWidth) {
         super(game, islandWidth / 2, skyHeight, WIDTH, crabImage);
@@ -15,10 +27,13 @@ public class IslandObjectHittableCrab extends AbstractIslandObjectHittable {
 
     @Override
     public void step() {
-        // do nothing
+        // Crab does not move automatically
     }
 
-    // Captures the crab crawling sideways
+    /**
+     * Move the crab sideways.
+     * @param offset positive for right, negative for left
+     */
     public void crawl(int offset) {
         x += offset;
         display();
@@ -38,8 +53,7 @@ public class IslandObjectHittableCrab extends AbstractIslandObjectHittable {
         int crabTop = this.y;
         int crabBottom = this.y + this.width;
 
-
-        int otherLeft = other.x - other.width;
+        int otherLeft = other.x;
         int otherRight = other.x + other.width;
         int otherTop = other.y;
         int otherBottom = other.y + other.width;
@@ -47,11 +61,40 @@ public class IslandObjectHittableCrab extends AbstractIslandObjectHittable {
         boolean horizontalOverlap = crabRight >= otherLeft && crabLeft <= otherRight;
         boolean verticalOverlap = crabTop <= otherBottom && crabBottom >= otherTop;
 
-        return horizontalOverlap && verticalOverlap;
+        boolean touching = horizontalOverlap && verticalOverlap;
+
+        // Notify observers if the crab is hit
+        if (touching) {
+            notifyAllObservers(this, other);
+        }
+
+        return touching;
     }
 
     @Override
     public boolean canHit(AbstractIslandObject other) {
+        // Crab is only hit by falling objects
         return other.isFalling();
+    }
+
+    // ===== Observer Pattern Implementation =====
+
+    @Override
+    public void attach(HitEventObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    @Override
+    public void detach(HitEventObserver observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyAllObservers(AbstractIslandObjectHittable target, AbstractIslandObject hitter) {
+        for (HitEventObserver observer : observers) {
+            observer.update(target, hitter);
+        }
     }
 }
