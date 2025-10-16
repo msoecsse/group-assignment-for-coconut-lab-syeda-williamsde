@@ -16,5 +16,10 @@ package coconuts;
  * @version created on 10/9/2025 11:43 AM
  */
 public interface HitEventObserver {
+    /**
+     * Updates observer when hittable object hit
+     * @param target - target object
+     * @param hitter - hitting object
+     */
     void update(AbstractIslandObjectHittable target, AbstractIslandObject hitter);
 }

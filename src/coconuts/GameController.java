@@ -9,6 +9,7 @@ import javafx.animation.Timeline;
 import javafx.util.Duration;
 
 // JavaFX Controller class for the game - generally, JavaFX elements (other than Image) should be here
+//Modified by Ameera Syed
 public class GameController {
 
     /**

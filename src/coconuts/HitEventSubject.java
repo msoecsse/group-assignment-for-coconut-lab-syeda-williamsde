@@ -16,7 +16,23 @@ package coconuts;
  * @version created on 10/9/2025 11:42 AM
  */
 public interface HitEventSubject {
+    /**
+     * Adds observer to list
+     * @param observer - observer to add
+     */
     void attach(HitEventObserver observer);
+
+    /**
+     * Removes observer from list
+     * @param observer - observer to remove
+     */
     void detach(HitEventObserver observer);
+
+    /**
+     * Notifies all observers after event
+     * Parameters are used to determine objects when touching
+     * @param target - target
+     * @param hitter - hitter
+     */
     void notifyAllObservers(AbstractIslandObjectHittable target, AbstractIslandObject hitter);
 }

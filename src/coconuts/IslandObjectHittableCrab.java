@@ -1,7 +1,7 @@
 /*
  * Course: SWE2410-121
  * Fall 2025-2026
- * Name: Demarion Williams , Syeda
+ * Name: Demarion Williams , Ameera Syed
  * Created 10/15/2025
  */
 package coconuts;
@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * Crab that can be hit by coconuts. Implements the Observer Pattern so that
  * other objects (like the scoreboard or game manager) can respond when the crab is hit.
+ * Modified by Ameera & Demarion
  */
 public class IslandObjectHittableCrab extends AbstractIslandObjectHittable implements HitEventSubject {
     private static final int WIDTH = 50; // assumption: height and width are the same

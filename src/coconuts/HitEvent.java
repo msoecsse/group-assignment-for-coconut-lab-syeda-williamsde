@@ -7,6 +7,7 @@ import java.util.List;
 // This captures the Subject side of the Observer pattern; observers of the hit event will take action
 //   to process that event
 // This is a domain class; do not introduce JavaFX or other GUI components here
+//Modified by Ameera Syed
 public class HitEvent implements HitEventSubject{
     protected final List<HitEventObserver> observers;
 

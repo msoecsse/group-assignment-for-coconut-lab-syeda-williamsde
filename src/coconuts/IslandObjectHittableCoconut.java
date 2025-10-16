@@ -1,7 +1,7 @@
 /*
  * Course: SWE2410-121
  * Fall 2025-2026
- * Name: Demarion Williams , Syeda
+ * Name: Demarion Williams , Ameera Syed
  * Created 10/15/2025
  */
 package coconuts;
@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * Falling coconut that can hit ground objects like the crab or beach.
  * Implements the HitEventSubject interface for the Observer Pattern.
+ * Modified by Ameera & Demarion
  */
 public class IslandObjectHittableCoconut extends AbstractIslandObjectHittable implements HitEventSubject {
     private static final int WIDTH = 50;

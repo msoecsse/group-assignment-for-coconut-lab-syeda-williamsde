@@ -1,7 +1,7 @@
 /*
  * Course: SWE2410-121
  * Fall 2025-2026
- * Name: Demarion Williams , Syeda
+ * Name: Demarion Williams , Ameera Syed
  * Created 10/15/2025
  */
 package coconuts;
@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 // This class manages the game, including tracking all island objects and detecting when they hit
+// Modified by Ameera
 public class OhCoconutsGameManager {
     private final Collection<AbstractIslandObject> allObjects = new LinkedList<>();
     private final Collection<AbstractIslandObjectHittable> hittableIslandSubjects = new LinkedList<>();
